@@ -2,8 +2,8 @@
 class Place
 {
     private $location;
-    private $length_of_stay;
-    public $scenery;
+    //private $length_of_stay;
+    //public $scenery;
 
     function __construct($location)
     {
