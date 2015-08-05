@@ -1,15 +1,26 @@
 <?php
     require_once __DIR__."/../vendor/autoload.php";
     require_once __DIR__."/../src/Place.php";
+
     session_start();
     if (empty($_SESSION['list_of_places']))
     {
         $_SESSION['list_of_places'] = array();
     }
     $app = new Silex\Application();
-    $app->get("/", function()
+
+    //Add line to access twig templates
+    $app->register(new Silex\Provider\TwigServiceProvider(), array(
+        'twig.path' => __DIR__.'/../view'
+    ));
+
+    // modify route to 'use ($app)'
+    $app->get("/", function() use ($app)
     {
-        $output = "";
+        //change former output to reference twig template file
+        return $app['twig']->render('places.html.twig', array('places' => Place::getAll()));
+    });
+        /*$output = "";
         $all_places = Place::getALL();
         if(!empty($all_places))
         {
@@ -35,24 +46,19 @@
             </form>
         ";
         return $output;
-    });
-    $app->post("/places", function()
+    });*/
+    $app->post("/places", function() use ($app)
     {
         $place = new Place($_POST['location']);
         $place->save();
-        return "
-            <h1>You created a place!</h1>
-            <p>" . $place->getLocation() . "</p>
-            <p><a href='/'>View your list of places</a></p>
-        ";
+        return $app['twig']->render('create_place.html.twig', array('new_place' => $place));
     });
+
     $app->post("/delete_places", function()
     {
         Place::deleteAll();
-        return "
-            <h1>List Cleared!</h1>
-            <p><a href='/'>Home</a></p>
-        ";
+        return $app['twig']->render('delete_places.html.twig');
+
     });
     return $app;
 ?>
